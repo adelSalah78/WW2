@@ -19,6 +19,16 @@
 	height: 10px;
 	background-color: transparent;
 }
+#gun-score {
+	position: absolute;
+	left:1000px;
+	top:580px;
+}
+#encourageMsg {
+	position: absolute;
+	left:500px;
+	top:290px;
+}
 </style>
 <script src="Plane.js" type="text/javascript"></script>
 <script src="Rocket.js" type="text/javascript"></script>
@@ -28,11 +38,14 @@
 <img id="plane" class="war"/>
 <div id="rocket" class="war"></div>
 <img src="img/AntiAir2.png" id="gun" class="war"/>
+<div id="gun-score"></div>
+
+<div id="encourageMsg"></div>
 
 <script type="text/javascript">
 var plane = new Plane('','right',null,null);
 var gun = new AntiAirGun();
-var rocket = new Rocket('',null,null,gun);
+var rocket = new Rocket('',null,null,gun,plane);
 var currentPlaneKeyCode = null;
 var currentGunKeyCode = null;
 
@@ -48,6 +61,18 @@ function initGame() {
 	var gunInterval = setInterval(gun.gunRotator,15);
 	
 	var rocketInterval = setInterval(rocket.launch.bind(rocket),1);
+	
+	var allIntervals = [];
+	allIntervals.push(planeInterval);
+	allIntervals.push(gunInterval);
+	allIntervals.push(rocketInterval);
+	
+	rocket.intervals = allIntervals;
+	
+	if(!localStorage.getItem("gunScore"))
+		localStorage.setItem("gunScore",0)
+	
+	document.getElementById('gun-score').innerHTML = localStorage.getItem("gunScore");
 }
 
 function moveGunObject(event){
@@ -56,6 +81,8 @@ function moveGunObject(event){
 }
 
 function moveObjects(event){
+	if(rocket.planeCaught)
+		return;
 	if(event.keyCode == 39 || event.keyCode == 37)
 		currentPlaneKeyCode = event.keyCode;
 	if(event.keyCode == 65 || event.keyCode == 68)
@@ -68,6 +95,8 @@ function movePlaneObject(event) {
 }
 
 function pasueObjects(event){
+	if(rocket.planeCaught)
+		return;
 	if((event.keyCode == 39 && plane.direction == 'right') || (event.keyCode == 37 && plane.direction == 'left'))
 		currentPlaneKeyCode = null;
 	if((event.keyCode == 65 && gun.direction == 'left') || (event.keyCode == 68 && gun.direction == 'right'))
@@ -75,6 +104,8 @@ function pasueObjects(event){
 }
 
 function launchRocket(event) {
+	if(rocket.planeCaught)
+		return;
 	if(event.keyCode == 32) {
 		
 		if(rocket.launched)

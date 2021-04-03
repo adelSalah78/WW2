@@ -1,4 +1,4 @@
-var Rocket = function(color,left,top,gun) {
+var Rocket = function(color,left,top,gun,plane) {
 	this.color = color;
 	this.left = left;
 	this.top = top;
@@ -25,18 +25,45 @@ var Rocket = function(color,left,top,gun) {
 	
 	this.newSlope = 0;
 	
+	this.plane = plane;
+	
+	this.planeCaught = false;
+	
+	this.planeScore = 0;
+	
+	this.gunScore = localStorage.getItem("gunScore");
+	
+	this.intervals=[];
+	
 	
 	this.changePosition = function(left,top){
 		this.left = left;
 		this.top = top;
 	}
 	
+	this.youHitTheBastard= function() {
+		var rocketWidth = this.left + 10;
+		return this.top<=45 && this.top>=38 && rocketWidth>= plane.left && rocketWidth <= plane.left+200;
+	}
+	
 	this.launch = function() {
-		//console.log(this.launched)
-		if(!this.launched)
+		if(!this.launched || this.planeCaught)
 			return;
 		document.getElementById("rocket").style.left = this.left + 'px';
 		document.getElementById("rocket").style.top = this.top + 'px';
+		
+		if(this.youHitTheBastard()) {
+			document.getElementById('encourageMsg').innerHTML = 'You hit the bastard!, refresh to continue';
+			localStorage.setItem("gunScore",++this.gunScore);
+			this.planeCaught = true;
+			//document.location.href = document.location.href;
+			
+			this.intervals.forEach((interval) => {
+				clearInterval(interval);
+			});
+			return;
+		}
+		
 		
 		document.getElementById("rocket").style.backgroundColor = this.color;
 		
