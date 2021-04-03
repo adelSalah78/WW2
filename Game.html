@@ -14,28 +14,40 @@
 	height: 200px;
 	width: 80px;
 }
+#rocket {
+	width: 10px;
+	height: 10px;
+	background-color: transparent;
+}
 </style>
 <script src="Plane.js" type="text/javascript"></script>
 <script src="Rocket.js" type="text/javascript"></script>
 <script src="AntiAirGun.js" type="text/javascript"></script>
 </head>
-<body onkeydown="moveObjects(event)" onkeyup="pasueObjects(event)">
-<img id="plane" class="war"></div>
-<img id="rocket" class="war"></div>
-<img src="img/AntiAir2.png" id="gun" class="war"></div>
+<body onkeypress="launchRocket(event)" onkeydown="moveObjects(event)" onkeyup="pasueObjects(event)">
+<img id="plane" class="war"/>
+<div id="rocket" class="war"></div>
+<img src="img/AntiAir2.png" id="gun" class="war"/>
 
 <script type="text/javascript">
 var plane = new Plane('','right',null,null);
 var gun = new AntiAirGun();
+var rocket = new Rocket('',null,null,gun);
 var currentPlaneKeyCode = null;
 var currentGunKeyCode = null;
+
+const maxTop = 700;
+const maxHalfLeft = 500;
+
 initGame();
 function initGame() {
 	plane.changePosition(400,10);
 	
-	var planeInterval = setInterval(plane.planeMover,15);
+	var planeInterval = setInterval(plane.planeMover,10);
 	
 	var gunInterval = setInterval(gun.gunRotator,15);
+	
+	var rocketInterval = setInterval(rocket.launch.bind(rocket),1);
 }
 
 function moveGunObject(event){
@@ -60,6 +72,69 @@ function pasueObjects(event){
 		currentPlaneKeyCode = null;
 	if((event.keyCode == 65 && gun.direction == 'left') || (event.keyCode == 68 && gun.direction == 'right'))
 		currentGunKeyCode = null;
+}
+
+function launchRocket(event) {
+	if(event.keyCode == 32) {
+		
+		if(rocket.launched)
+			return;
+		//rocket
+		var rocketPosition = getPixelsByAngle(500,400,80,200,gun.calculatedDegree)[1];
+		rocket.left = rocketPosition[0];
+		rocket.top = rocketPosition[1];
+		
+		rocket.color = "Red";
+		
+		rocket.launched = true;
+		
+		var degrees = 180 - gun.degree;
+		//var radian = degrees * (pi/180)
+		var tanTheta = Math.tan(degrees);
+		var endY = maxHalfLeft * tanTheta;
+		endY = maxTop - endY;
+		
+		rocket.destination = endY;
+		
+		rocket.maxTopWhileLaunching = rocket.top;
+		
+		rocket.degreeWhileLaunching = gun.degree;
+		if((rocket.degreeWhileLaunching >90 && rocket.degreeWhileLaunching <98) || (rocket.degreeWhileLaunching >82 && rocket.degreeWhileLaunching <90)) {
+			rocket.newSlope = 1;
+		}
+		else if(rocket.degreeWhileLaunching >90) {
+			//rocket.newSlope = (rocket.destination-rocket.top)/((maxHalfLeft * 2) - rocket.left);
+			rocket.newSlope = 180 - rocket.degreeWhileLaunching;
+			rocket.newSlope = rocket.newSlope * Math.PI / 180;
+		}
+		else if(rocket.degreeWhileLaunching < 90) {
+			//rocket.newSlope = (rocket.destination-rocket.top)/(rocket.left);
+			rocket.newSlope = rocket.degreeWhileLaunching;
+			rocket.newSlope = rocket.newSlope * Math.PI / 180;
+		}
+		else {
+			rocket.newSlope = 1;
+		}
+		//alert(rocket.newSlope)
+		
+		
+		
+	}
+}
+
+
+function getPixelsByAngle(x, y, width, height, angle) {
+   var radians = angle * Math.PI / 180;
+   return [
+      //upper left
+      [x + width/2 + width/-2 * Math.cos(radians) - height/-2 * Math.sin(radians), y + height/2 + width/-2 * Math.sin(radians) + height/-2 * Math.cos(radians)],
+      //upper right
+      [x + width/2 + width/2 * Math.cos(radians) - height/-2 * Math.sin(radians), y + height/2 + width/2 * Math.sin(radians) + height/-2 * Math.cos(radians)],
+      //bottom right
+      [x + width/2 + width/2 * Math.cos(radians) - height/2 * Math.sin(radians), y + height/2 + width/2 * Math.sin(radians) + height/2 * Math.cos(radians)],
+      //bottom left
+      [x + width/2 + width/-2 * Math.cos(radians) - height/2 * Math.sin(radians), y + height/2 + width/-2 * Math.sin(radians) + height/2 * Math.cos(radians)],
+   ];
 }
 </script>
 </body>

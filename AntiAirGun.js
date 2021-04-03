@@ -1,10 +1,12 @@
 var AntiAirGun = function(){
 	this.startDegree = 100;
-	this.gunRotateDegree = 8;
+	this.gunRotateDegree = 4;
 	this.degree = this.startDegree;
 	
+	this.calculatedDegree = 0;
+	
 	this.changeDegree = function(degree) {
-		if(degree > 170 || degree< 20)
+		if(degree > 180 || degree< 0)
 			return;
 		this.degree = degree;
 	}
@@ -15,6 +17,7 @@ var AntiAirGun = function(){
 	
 	this.rotate = function() {
 		document.getElementById("gun").style.transform = "rotate("+(this.degree-this.startDegree)+"deg)"; 
+		this.calculatedDegree = this.degree-this.startDegree;
 	}
 	
 	this.gunRotator = function() {
